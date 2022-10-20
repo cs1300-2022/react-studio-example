@@ -1,34 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState } from "react";
+import BakeryItem from "./components/BakeryItem";
+import bakeryData from "./assets/bakery-data.json";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [cart, setCart] = useState<Record<number, number>>({});
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="App flex flex-col items-center">
+      <div className="flex w-full md:max-w-[1024px]">
+        <main className="flex flex-col w-2/3 p-8 gap-8">
+          <h1 className="text-4xl font-medium">Blueno's Bakery</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {bakeryData.map((item, index) => (
+              <BakeryItem
+                key={index}
+                item={item}
+                addToCart={() => {
+                  setCart((prevCart) => {
+                    const newCart = { ...prevCart };
+                    newCart[index] = (newCart[index] || 0) + 1;
+                    return newCart;
+                  });
+                }}
+              />
+            ))}
+          </div>
+        </main>
+        <aside className="flex flex-col w-1/3 shrink-0 p-8 pt-24">
+          <h2 className="text-2xl font-medium">My Cart</h2>
+          {Object.entries(cart).length === 0 ? (
+            <p className="text-gray-500 mt-4">Nothing here just yet!</p>
+          ) : (
+            <>
+              <ul className="mt-4">
+                {Object.entries(cart).map(([index, quantity]) => {
+                  const item = bakeryData[Number(index)];
+                  return (
+                    <li key={index}>
+                      {quantity}x {item.name}
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-4">
+                Total: $
+                {Object.entries(cart).reduce((total, [index, quantity]) => {
+                  const item = bakeryData[Number(index)];
+                  return Number((total + item.price * quantity).toFixed(2));
+                }, 0)}
+              </p>
+            </>
+          )}
+        </aside>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
